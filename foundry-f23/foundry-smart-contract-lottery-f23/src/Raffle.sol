@@ -9,13 +9,17 @@ import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2
  * @notice This contract is for creating a sample raffle contract
  * @dev This implements the Chainlink VRF Version 2
  */
-abstract contract Raffle is VRFConsumerBaseV2{
+abstract contract Raffle is VRFConsumerBaseV2 {
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferFailed();
+    error Raffle__RaffleNotOpen();
 
+    enum RaffleState {
+        OPEN,
+        CALCULATING
+    }
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
-
 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
@@ -24,15 +28,15 @@ abstract contract Raffle is VRFConsumerBaseV2{
     uint64 private immutable i_subscriptionid;
     uint32 private immutable i_callbackGasLimit;
 
-
     uint256 private s_lastTimeStamp;
 
     address payable[] private s_players;
     address private s_recentWinner;
-
+    RaffleState private s_raffleState;
 
     /* Events */
     event EnteredRaffle(address indexed player);
+    event WinnerPicked(address indexed player);
 
     constructor(
         uint256 entranceFee,
@@ -48,14 +52,16 @@ abstract contract Raffle is VRFConsumerBaseV2{
         i_gasLane = gasLane;
         i_subscriptionid = subscriptionid;
         i_callbackGasLimit = callbackGasLimit;
-
+        s_raffleState = RaffleState.OPEN;
         s_lastTimeStamp = block.timestamp;
-        
     }
 
     function enterRaffle() external payable {
         if (msg.value < i_entranceFee) {
             revert Raffle__NotEnoughEthSent();
+        }
+        if (s_raffleState != RaffleState.OPEN) {
+            revert Raffle__RaffleNotOpen();
         }
         s_players.push(payable(msg.sender));
         emit EnteredRaffle(msg.sender);
@@ -65,6 +71,7 @@ abstract contract Raffle is VRFConsumerBaseV2{
         if ((block.timestamp - s_lastTimeStamp < i_interval)) {
             revert();
         }
+        s_raffleState = RaffleState.CALCULATING;
         uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
             i_subscriptionid,
@@ -72,21 +79,26 @@ abstract contract Raffle is VRFConsumerBaseV2{
             i_callbackGasLimit,
             NUM_WORDS
         );
-        
     }
-     function fulfillRandomWords(
-        uint256  requestId,
+
+    function fulfillRandomWords(
+        uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
-       uint256 indexOfWinner = randomWords[0] % s_players.length;
+        uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
+
+        s_players = new address payable[](0);
+        s_raffleState = RaffleState.OPEN;
+        s_lastTimeStamp = block.timestamp;
+        emit WinnerPicked(winner);
+
         (bool success, ) = winner.call{value: address(this).balance}("");
         // require(success, "Transfer failed");
         if (!success) {
             revert Raffle__TransferFailed();
         }
-
     }
 
     function getEntranceFee() external view returns (uint256) {
