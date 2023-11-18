@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.19;
-import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import {VRFConsumerBaseV2} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 /**@title A sample Raffle Contract
  * @author Patrick Collins
@@ -136,7 +136,7 @@ contract Raffle is VRFConsumerBaseV2 {
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
     }
-    
+
     function getRaffleState() public view returns (RaffleState) {
         return s_raffleState;
     }
