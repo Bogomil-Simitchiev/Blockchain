@@ -41,7 +41,8 @@ contract Raffle is VRFConsumerBaseV2 {
 
     /* Events */
     event EnteredRaffle(address indexed player);
-    event WinnerPicked(address indexed player);
+    event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(
         uint256 entranceFee,
@@ -111,6 +112,8 @@ contract Raffle is VRFConsumerBaseV2 {
             i_callbackGasLimit,
             NUM_WORDS
         );
+
+        emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
@@ -143,5 +146,9 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 index) public view returns (address) {
         return s_players[index];
+    }
+
+    function getRecentWinner() public view returns (address) {
+        return s_recentWinner;
     }
 }
