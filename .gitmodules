@@ -16,3 +16,9 @@
 [submodule "foundry-f23/foundry-erc20-f23/lib/openzeppelin-contracts"]
 	path = foundry-f23/foundry-erc20-f23/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "foundry-f23/foundry-nft-f23/lib/forge-std"]
+	path = foundry-f23/foundry-nft-f23/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "foundry-f23/foundry-nft-f23/lib/openzeppelin-contracts"]
+	path = foundry-f23/foundry-nft-f23/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
