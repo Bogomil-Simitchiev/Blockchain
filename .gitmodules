@@ -22,3 +22,6 @@
 [submodule "foundry-f23/foundry-nft-f23/lib/openzeppelin-contracts"]
 	path = foundry-f23/foundry-nft-f23/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "foundry-f23/foundry-nft-f23/lib/foundry-devops"]
+	path = foundry-f23/foundry-nft-f23/lib/foundry-devops
+	url = https://github.com/ChainAccelOrg/foundry-devops
