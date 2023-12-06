@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "../lib/forge-std/src/Script.sol";
+
 import {BasicNft} from "../src/BasicNft.sol";
 
 contract DeployBasicNft is Script {
