@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
 import {Test} from "../../lib/forge-std/src/Test.sol";
 import {DeployDSC} from "../../script/DeployDSC.s.sol";
@@ -17,6 +17,8 @@ contract DSCEngineTest is Test {
     HelperConfig config;
 
     address ethUsdPriceFeed;
+    address btcUsdPriceFeed;
+
     address weth;
 
     address public USER = makeAddr("user");
@@ -24,14 +26,27 @@ contract DSCEngineTest is Test {
     uint256 public constant STARTING_BALANCE = 10 ether;
 
 
-    function setUp() external {
+    function setUp() public {
         deployer = new DeployDSC();
         (dsc, dsce, config) = deployer.run();
-        (ethUsdPriceFeed, , weth, , ) = config.activeNetworkConfig();
+        (ethUsdPriceFeed, btcUsdPriceFeed, weth, , ) = config.activeNetworkConfig();
 
         ERC20Mock(weth).mint(USER, STARTING_BALANCE);
     }
+    //////////////////
+    // Constructor Tests //
+    //////////////////
+    address[] public tokenAddresses;
+    address[] public priceFeedAddresses;
 
+    function testRevertsIfTokenLengthDoesntMatchPriceFeeds() public {
+        tokenAddresses.push(weth);
+        priceFeedAddresses.push(ethUsdPriceFeed);
+        priceFeedAddresses.push(btcUsdPriceFeed);
+
+        vm.expectRevert(DSCEngine.DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength.selector);
+        new DSCEngine(tokenAddresses, priceFeedAddresses, address(dsc));
+    }
     //////////////////
     // Price Tests //
     //////////////////
