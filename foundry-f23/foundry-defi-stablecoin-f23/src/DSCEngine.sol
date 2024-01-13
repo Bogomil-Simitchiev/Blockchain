@@ -29,9 +29,9 @@ import {AggregatorV3Interface} from "../lib/chainlink-brownie-contracts/contract
 import {DecentralizedStableCoin} from "./DecentralizedStableCoin.sol";
 
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-
+import {OracleLib} from "./libraries/OracleLib.sol";
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-
+import {AggregatorV3Interface} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 /**
  * @title DSCEngine
  * @author Bogomil Simitchiev
@@ -67,6 +67,8 @@ contract DSCEngine is ReentrancyGuard {
     uint256 private constant PRECISION = 1e18;
     uint256 private constant MIN_HEALTH_FACTOR = 1e18;
     uint256 private constant LIQUIDATION_BONUS = 10;
+    using OracleLib for AggregatorV3Interface;
+  
     ///////////////////
     // State Variables
     ///////////////////
@@ -327,7 +329,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_priceFeeds[token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
 
         return (((usdAmountInWei * PRECISION) / uint256(price)) *
             ADDITIONAL_FEED_PRECISION);
@@ -367,5 +369,13 @@ contract DSCEngine is ReentrancyGuard {
      function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
         return s_collateralDeposited[user][token];
     }
-
+    function getLiquidationBonus() external pure returns (uint256) {
+        return LIQUIDATION_BONUS;
+    }
+    function getPrecision() external pure returns (uint256) {
+        return PRECISION;
+    }
+    function getCollateralTokenPriceFeed(address token) external view returns (address) {
+        return s_priceFeeds[token];
+    }
 }

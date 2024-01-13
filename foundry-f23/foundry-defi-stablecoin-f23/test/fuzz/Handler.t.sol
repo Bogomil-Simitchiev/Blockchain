@@ -7,6 +7,7 @@ import {DSCEngine} from "../../src/DSCEngine.sol";
 import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 
 import {ERC20Mock} from "../../lib/openzeppelin-contracts/contracts/mocks/ERC20Mock.sol";
+import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
 
 contract Handler is Test {
@@ -17,7 +18,7 @@ contract Handler is Test {
     uint256 MAX_DEPOSIT_SIZE = type(uint96).max;
     uint256 public timesMintIsCalled;
     address[] public usersWithCollateralDeposited;
-
+    MockV3Aggregator public ethUsdPriceFeed;
     constructor(DSCEngine _dscEngine, DecentralizedStableCoin _dsc) {
         dsce = _dscEngine;
         dsc = _dsc;
@@ -25,7 +26,8 @@ contract Handler is Test {
         address[] memory collateralTokens = dsce.getCollateralTokens();
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
-
+        ethUsdPriceFeed = MockV3Aggregator(dsce.getCollateralTokenPriceFeed(address(weth)));
+    
     }
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
@@ -47,6 +49,11 @@ contract Handler is Test {
         }
         dsce.redeemCollateral(address(collateral), amountCollateral);
     }
+    // function updateCollateralPrice(uint96 newPrice) public {
+    //     int256 newPriceInt = int256(uint256(newPrice));
+    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
+    // }
+
     function mintDsc(uint256 amount, uint256 addressSeed) public {
         if( usersWithCollateralDeposited.length == 0){
             return;
