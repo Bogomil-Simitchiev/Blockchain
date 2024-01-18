@@ -8,7 +8,7 @@ contract BoxV2 is UUPSUpgradeable{
     uint256 internal number;
 
     function setNumber(uint256 _number) external {
-
+        number = _number;
     } 
 
     function getNumber() external view returns (uint256) {
