@@ -30,8 +30,10 @@ contract Event is ERC721, ERC721URIStorage, Ownable {
         metadata = _metadata;
     }
 
-    function buyTicket(uint256 amount) external {
+    function buyTicket(uint256 amount) external payable {
         require(amount < 50, "Too much tickets");
+        require(amount * ticketsPrice == msg.value, "Insufficient value");
+
         for (uint256 i = 0; i < amount; i++) {
             safeMint(msg.sender, _METADATA);
         }
