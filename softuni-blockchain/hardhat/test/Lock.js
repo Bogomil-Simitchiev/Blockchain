@@ -12,6 +12,7 @@ describe("Lock", function () {
   async function deployOneYearLockFixture() {
     const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
     const ONE_GWEI = 1_000_000_000;
+    const number = 1;
 
     const lockedAmount = ONE_GWEI;
     const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
@@ -22,8 +23,15 @@ describe("Lock", function () {
     const Lock = await ethers.getContractFactory("Lock");
     const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
 
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
+    return { lock, unlockTime, lockedAmount, owner, otherAccount, number };
   }
+  describe("Example", function () {
+    it("Should return true if number equals 1", async function () {
+      const { number } = await loadFixture(deployOneYearLockFixture);
+      expect(number).to.equal(1);
+
+    })
+  })
 
   describe("Deployment", function () {
     it("Should set the right unlockTime", async function () {
