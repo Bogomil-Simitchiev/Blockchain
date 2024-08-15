@@ -1,2 +1,2 @@
 # Blockchain
-Blockchain projects and exercises
+Blockchain Courses
