@@ -7,7 +7,7 @@ contract HomeRepairService {
     error UserAlreadyPaid();
     event RequestIsDone(uint256 indexed _ID);
 
-    // admin of the contract
+    // administrator of the contract
     address public administrator = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
 
     // save requests
@@ -30,7 +30,7 @@ contract HomeRepairService {
         string description;
     }
 
-    // Contract's amount in ETH
+    // contract's amount in ETH
     uint256 public ethAmount = 0;
 
     function addRepairRequest(uint256 _ID, string memory _description) public {
@@ -49,8 +49,9 @@ contract HomeRepairService {
         // only admin can accept repairing requests
         require(
             msg.sender == administrator,
-            "User cannot accept his own request"
+            "Only administrator can accept a request"
         );
+        require(requests[_ID] != address(0), "There is no request with this ID");
         require(accepted[_ID] == false, "Repair already accepted");
         require(payments[_ID] == true, "User did not pay");
 
@@ -63,7 +64,7 @@ contract HomeRepairService {
         require(msg.value > 0, "Cannot send 0 as value");
 
         if (payments[_ID] == true) {
-            // reverts if user has paid paid for the request
+            // reverts if user has paid for the request
             revert UserAlreadyPaid();
         } else {
             // chechks if user have request
