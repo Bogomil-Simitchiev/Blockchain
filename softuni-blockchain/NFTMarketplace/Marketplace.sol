@@ -16,19 +16,8 @@ contract Marketplace {
         uint256 _maxTickets,
         string memory _metadata
     ) external {
-        address newEvent = address(
-            new Event(
-                msg.sender,
-                _saleStart,
-                _saleEnd,
-                _ticketsPrice,
-                _maxTickets,
-                _metadata
-            )
-        );
-
+        address newEvent = address(new Event(msg.sender, _saleStart, _saleEnd, _ticketsPrice, _maxTickets, _metadata));
         events.push(newEvent);
-
         emit NewEvent(msg.sender, newEvent);
     }
 }

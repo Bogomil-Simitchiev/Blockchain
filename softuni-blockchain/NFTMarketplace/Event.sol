@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Event is ERC721, ERC721URIStorage, Ownable {
-    string constant _METADATA =
-        "http://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4.ipfs.localhost:8080/?filename=0-PUG.json";
+    //http://bafybeig37ioir76s7mg5oobetncojcm3c3hxasyd4rvid4jqhy4gkaheg4.ipfs.localhost:8080/?filename=0-PUG.json
+    string constant _METADATA = "https://api.jsonbin.io/v3/qs/66e4572ee41b4d34e42f5e51";
 
     uint256 private _nextTokenId;
     uint256 public maxTickets;

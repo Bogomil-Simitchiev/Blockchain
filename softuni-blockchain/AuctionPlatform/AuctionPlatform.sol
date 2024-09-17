@@ -19,28 +19,25 @@ contract AuctionPlatform {
     error InsufficientAmount();
 
     // events when new auction is created and new highest bid is sent
-    event NewAuction(uint256 indexed id);
+    event NewAuctionCreated(uint256 indexed id);
     event NewHighestBid(uint256 indexed auctionId);
 
     // modifiers for checking if auction is active and if auction ended
     modifier onlyActiveAuction(uint256 _auctionId) {
-        Auction storage auction = auctions[_auctionId];
-        require(auction.start <= block.timestamp, "auction is not started yet");
-        require(auction.duration >= block.timestamp, "auction already ended");
-
+        Auction storage auction = getAuction(_auctionId);
+        require(auction.start < block.timestamp, "auction is not started yet");
+        require(auction.duration > block.timestamp, "auction already ended");
         _;
     }
-    modifier auctionEnded(uint256 _auctionId) {
-        Auction storage auction = auctions[_auctionId];
-        require(auction.duration < block.timestamp, "auction is not ended");
 
+    modifier auctionEnded(uint256 _auctionId) {
+        Auction storage auction = getAuction(_auctionId);
+        require(auction.duration < block.timestamp, "auction is not ended");
         _;
     }
 
     // index of every new auction creation
     uint256 count = 1;
-
-    uint256 public timeNow = block.timestamp;
 
     // mappings for highest bids, auctions, is current auction finalized and is user available to withdraw
     mapping(uint256 => uint256) public highestBids;
@@ -55,7 +52,6 @@ contract AuctionPlatform {
         string memory _itemDescription,
         uint256 _startingPrice
     ) external {
-
         // checks _start is greater than the current time, because auction must starts in future
         require(_start > block.timestamp, "Not correct start time");
 
@@ -75,24 +71,21 @@ contract AuctionPlatform {
             _start + _duration,
             _itemName,
             _itemDescription,
-            _startingPrice,
+            _startingPrice * 1e18, // starting price in ETH (not gwei or wei)
             msg.sender,
             msg.sender
         );
 
-        // first highest bid is what creator sent
+        // first highest bid is what creator set as highest bid
         highestBids[auctionId] = _startingPrice;
 
         // emit event for new auction creation
-        emit NewAuction(auctionId);
+        emit NewAuctionCreated(auctionId);
     }
 
-    function placeBid(
-        uint256 _auctionId
-    ) external payable onlyActiveAuction(_auctionId) {
-
+    function placeBid(uint256 _auctionId) external payable onlyActiveAuction(_auctionId) {
         // gets the current auction
-        Auction storage auction = auctions[_auctionId];
+        Auction storage auction = getAuction(_auctionId);
 
         // every user can place a bid except the creator of the auction
         require(msg.sender != auction.creator, "Creator cannot place bid");
@@ -109,32 +102,28 @@ contract AuctionPlatform {
 
             // saves amount of previous user bids, who is not the highest bidder already
             availableToWithdrawal[prevBidder] += prevBid;
+            
+            // new highest bid is set
+            emit NewHighestBid(_auctionId);
         } else {
             revert InsufficientAmount();
         }
 
-        // new highest bid is set
-        emit NewHighestBid(_auctionId);
     }
 
-    function finalizeAuction(
-        uint256 _auctionId
-    ) external auctionEnded(_auctionId) {
-
-        // gets the current auction, checks if auction is finalized and checks if msg.sender is the creator 
-        Auction memory auction = auctions[_auctionId];
-        require(
-            isFinalized[_auctionId] == false,
-            "Auction has already finalized"
-        );
+    function finalizeAuction(uint256 _auctionId) external auctionEnded(_auctionId) {
+        // gets the current auction, checks if auction is finalized and checks if msg.sender is the creator
+        Auction storage auction = getAuction(_auctionId);
+        require(isFinalized[_auctionId] == false, "Auction has already finalized");
         require(auction.creator == msg.sender, "Only creator can finalize");
 
         // sets auction as finalized
         isFinalized[_auctionId] = true;
+
+        payable(msg.sender).transfer(highestBids[_auctionId]);
     }
 
     function withdraw() external payable {
-
         // gets the amount of current msg.sender
         uint256 amount = availableToWithdrawal[msg.sender];
 
@@ -146,5 +135,9 @@ contract AuctionPlatform {
 
         // withdraw his ETHs
         payable(msg.sender).transfer(amount);
+    }
+
+    function getAuction(uint256 _auctionId) private view returns (Auction storage) {
+        return auctions[_auctionId];
     }
 }
