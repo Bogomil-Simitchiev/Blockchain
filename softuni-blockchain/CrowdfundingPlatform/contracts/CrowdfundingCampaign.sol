@@ -51,9 +51,11 @@ contract CrowdfundingCampaign is ERC20, Ownable {
 
         emit RefundIssued(msg.sender, contributedAmount);
     }
-    function withdrawFunds() public onlyOwner {
+    function withdrawFunds() public {
         require(block.timestamp >= campaignEnd, "Campaign is still active");
         require(totalContributed >= campaignGoal, "Goal not reached");
+        require(msg.sender == campaignCreator, "Sender is not the owner");
+
 
         goalReached = true;
 
